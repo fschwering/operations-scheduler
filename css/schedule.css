@@ -1,0 +1,477 @@
+/* Global */
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  color: #222;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Chart panel */
+
+.chart-panel {
+  background: #fff;
+  padding: 16px;
+  /* Enforce max height on the whole panel so controls get space */
+  max-height: 75vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  border-bottom: 1px solid #ddd;
+}
+
+.chart-panel-header {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chart-buttons-below {
+  padding: 0 16px 8px;
+}
+
+.chart-buttons-below .btn-row {
+  justify-content: flex-start;
+}
+
+/* Main chart wrapper */
+
+.schedule-wrapper {
+  min-width: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.chart-panel.collapsed .timeline,
+.chart-panel.collapsed .rows {
+  display: none;
+}
+
+/* Header */
+
+/* Header */
+
+.schedule-header {
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.schedule-header h2 {
+  margin: 0;
+}
+
+/* Legend (Top Right) */
+/* Legend */
+.grouping-legend {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  color: #333;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.header-subline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #555;
+  margin-top: 2px;
+}
+
+/* Timeline axis */
+
+.timeline {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 4px;
+}
+
+.axis-spacer {
+  width: 90px;
+  /* matches ROW_LABEL_WIDTH */
+  flex-shrink: 0;
+  margin-right: 8px;
+  /* NEW: match .rows column-gap so axis & grid share origin */
+}
+
+.axis-main {
+  flex: 1;
+}
+
+.timeline-labels,
+.timeline-ticks {
+  position: relative;
+  height: 20px;
+}
+
+.timeline-labels {
+  border-bottom: 1px solid #ccc;
+  font-size: 11px;
+  color: #444;
+}
+
+.timeline-labels span {
+  position: absolute;
+  top: 2px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.timeline-ticks {
+  height: 8px;
+}
+
+.timeline-tick {
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  height: 8px;
+  background: #555;
+}
+
+/* Rows grid */
+
+.rows {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  column-gap: 8px;
+  row-gap: 0;
+  align-items: stretch;
+}
+
+/* Row label */
+
+.row-label {
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 4px 0 0 4px;
+  box-sizing: border-box;
+}
+
+/* Row track */
+
+.row-track {
+  position: relative;
+  border-bottom: 1px solid #eee;
+  background: #fafafa;
+  border-radius: 0 4px 4px 0;
+  overflow: hidden;
+}
+
+/* Grid lines in track */
+
+.grid-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #e0e0e0;
+}
+
+/* Today line */
+
+.today-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(0, 170, 0, 0.7);
+  pointer-events: none;
+}
+
+/* Tasks (bars) */
+
+.task {
+  position: absolute;
+  top: 6px;
+  border-radius: 4px;
+  box-sizing: border-box;
+  border: 1px solid rgba(0, 0, 0, .2);
+  /* overflow: hidden;  <-- REMOVED to allow label overflow */
+  overflow: visible;
+  font-size: 11px;
+  padding: 4px 6px;
+  color: #111;
+  cursor: move;
+}
+
+.task strong {
+  display: block;
+  font-weight: bold;
+}
+
+.task span.sub {
+  display: block;
+  font-size: 10px;
+  opacity: .8;
+}
+
+/* Wrapper to constrain overflowing labels */
+.task-content-wrapper {
+  position: relative;
+  display: inline-block;
+  /* Allows text-align on parent to position this box */
+  width: max-content;
+  max-width: 300px;
+  /* Cut off if way too long */
+  z-index: 10;
+  white-space: pre-line;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+
+/* Chart Footer Comment */
+#chartFooterComment {
+  margin-top: 10px;
+  white-space: pre-wrap;
+  color: #333;
+  line-height: 1.4;
+}
+
+/* Drag / resize handles */
+
+.task-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: rgba(0, 0, 0, 0.1);
+  cursor: ew-resize;
+}
+
+.task-handle-left {
+  left: 0;
+}
+
+.task-handle-right {
+  right: 0;
+}
+
+.gantt-dragging {
+  cursor: ew-resize;
+}
+
+/* Control panel */
+
+.control-panel {
+  flex: 1;
+  /* Ensure at least 25% height */
+  min-height: 25vh;
+  padding: 16px;
+  overflow-y: auto;
+  background: #f7f7f7;
+}
+
+.control-panel h2 {
+  margin-top: 0;
+}
+
+/* Top setup grid */
+
+.setup-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.config-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  box-sizing: border-box;
+}
+
+.section-title {
+  margin: 6px 0 6px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #555;
+}
+
+/* Buttons */
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+button {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: 1px solid #999;
+  background: #f2f2f2;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #e6e6e6;
+}
+
+/* Inputs */
+
+input[type="text"],
+input[type="date"],
+input[type="number"],
+select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 3px 6px;
+  margin: 2px 0 6px;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  font-size: 12px;
+}
+
+input[type="color"] {
+  padding: 0;
+  height: 24px;
+}
+
+textarea {
+  font-family: inherit;
+}
+
+textarea.auto-grow {
+  width: 100%;
+  min-height: 24px;
+  resize: none;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 3px 6px;
+  margin: 2px 0 6px;
+}
+
+/* Small hint text */
+
+.hint {
+  display: block;
+  font-size: 11px;
+  color: #666;
+  margin-top: -2px;
+  margin-bottom: 4px;
+}
+
+/* Tables */
+
+.form-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.form-table th,
+.form-table td {
+  border: 1px solid #ddd;
+  padding: 4px;
+  vertical-align: top;
+}
+
+.form-table th {
+  background: #efefef;
+  font-weight: bold;
+}
+
+/* Make group and project tables horizontally scrollable if needed */
+
+.form-table thead th,
+.form-table td {
+  white-space: nowrap;
+}
+
+/* Sticky header for Items / Operations table */
+
+#itemTable {
+  border-collapse: separate;
+}
+
+#itemTable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #efefef;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive tweaks */
+
+@media (max-width: 1100px) {
+  .setup-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .setup-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Stacked Date/Time Inputs */
+.datetime-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.datetime-stack input {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 11px;
+  padding: 1px;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+}
+
+/* Narrow columns for Gap/Duration */
+th.narrow-col,
+td.narrow-col {
+  width: 50px;
+  min-width: 50px;
+  max-width: 50px;
+  white-space: normal !important;
+  /* Allow wrapping in header */
+  vertical-align: bottom;
+  font-size: 10px;
+  /* Slightly smaller header text */
+  line-height: 1.1;
+}
+
+th.narrow-col input,
+td.narrow-col input {
+  width: 100%;
+}

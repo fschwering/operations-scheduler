@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Operations Scheduler</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/schedule.css?v=2" />
+
+  <!-- html2canvas (external library for PNG export) -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+
+<body>
+  <div class="app">
+    <!-- CHART -->
+    <div class="chart-panel">
+      <div class="chart-panel-header">
+        <button id="toggleChartBtn">Hide Chart</button>
+        <button id="undoBtn" disabled style="opacity:0.5; cursor:default;">Undo</button>
+        <button id="redoBtn" disabled style="opacity:0.5; cursor:default;">Redo</button>
+        <button id="updateChartTopBtn">Update Chart</button>
+        <button id="saveTopBtn">Save Schedule</button>
+        <button id="loadTopBtn">Load Schedule</button>
+        <button id="exportPngTopBtn">Export PNG</button>
+        <button id="exportCsvTopBtn">Export CSV</button>
+        <button id="resetDemoTopBtn">Reset Demo Data</button>
+      </div>
+
+      <div class="schedule-wrapper">
+        <div class="schedule-header">
+          <h2 id="chartTitle">Schedule Title</h2>
+          <div class="header-subline">
+            <span id="leftHeaderText">Subject to Change</span>
+            <div id="groupingLegend" class="grouping-legend"></div>
+            <span id="rightHeaderText">Updated:</span>
+          </div>
+        </div>
+
+        <div class="timeline">
+          <div class="axis-spacer"></div>
+          <div class="axis-main">
+            <div class="timeline-labels" id="timelineLabels"></div>
+            <div class="timeline-ticks" id="timelineTicks"></div>
+          </div>
+        </div>
+
+        <div class="rows">
+          <div class="row-labels" id="rowLabels"></div>
+          <div class="row-tracks" id="rowTracks"></div>
+        </div>
+        <!-- Bottom Comment Box -->
+        <div id="chartFooterComment"></div>
+      </div>
+    </div>
+
+    <input type="file" id="loadConfigInput" accept="application/json" style="display:none;" />
+
+    <!-- CONTROL PANEL -->
+    <div class="control-panel">
+      <h2>Schedule Setup</h2>
+
+      <!-- NEW 4-column layout for the top settings -->
+      <div class="setup-grid">
+        <!-- Column 1: Chart Header & Comment -->
+        <div class="config-section">
+          <div class="section-title">Chart Header</div>
+          <label for="titleInput">Title Text</label>
+          <input id="titleInput" placeholder="Schedule Title" />
+          <label for="titleFontSizeInput">Title Font Size (px)</label>
+          <input type="number" id="titleFontSizeInput" value="22" />
+
+          <label for="titleAlignSelect">Title Align</label>
+          <select id="titleAlignSelect">
+            <option value="left">Left</option>
+            <option value="center" selected>Center</option>
+            <option value="right">Right</option>
+          </select>
+
+          <label for="leftHeaderInput">Left Header Text</label>
+          <input id="leftHeaderInput" placeholder="Subject to Change" />
+          <label for="leftHeaderSizeInput">Left Header Font Size (px)</label>
+          <input type="number" id="leftHeaderSizeInput" value="11" />
+
+          <label for="rightHeaderInput">Right Header Text</label>
+          <input id="rightHeaderInput" placeholder="Updated:" />
+          <label for="rightHeaderSizeInput">Right Header Font Size (px)</label>
+          <input type="number" id="rightHeaderSizeInput" value="11" />
+
+          <div class="section-title" style="margin-top:10px;">Chart Comment</div>
+          <label for="chartCommentInput">Comment Box Text</label>
+          <textarea id="chartCommentInput" class="auto-grow" rows="2"
+            placeholder="Enter comment to appear at bottom of chart..."></textarea>
+          <label for="chartCommentSizeInput">Font Size (px)</label>
+          <input type="number" id="chartCommentSizeInput" value="12" />
+        </div>
+
+        <!-- Column 2: Overall Dates + Width -->
+        <div class="config-section">
+          <div class="section-title">Overall Dates</div>
+          <label for="scheduleStartInput">Min / Start Date</label>
+          <input type="date" id="scheduleStartInput" />
+          <label for="scheduleEndInput">Max / End Date</label>
+          <input type="date" id="scheduleEndInput" />
+          <small class="hint">These define the visible timeline range.</small>
+
+          <div class="section-title" style="margin-top:10px;">Chart Width</div>
+          <label for="chartWidthInput">Gantt chart width (px, blank = auto)</label>
+          <input type="number" id="chartWidthInput" placeholder="Auto" />
+          <small class="hint">
+            This value is saved in the schedule file so everyone sees the same width.
+          </small>
+        </div>
+
+        <!-- Column 3: Today Line, Timeline, Interactions -->
+        <div class="config-section">
+          <div class="section-title">Today Line</div>
+          <label>
+            <input type="checkbox" id="showTodayInput" checked />
+            Show vertical line for today
+          </label>
+          <label for="todayColorInput">Today Line Color</label>
+          <input type="color" id="todayColorInput" value="#00aa00" />
+          <label for="todayThicknessInput">Today Line Thickness (px)</label>
+          <input type="number" id="todayThicknessInput" value="2" />
+          <label for="todayOpacityInput">Today Line Opacity (0–1)</label>
+          <input type="number" id="todayOpacityInput" value="0.7" step="0.05" min="0" max="1" />
+          <small class="hint">
+            Color, thickness, and opacity apply to the vertical line representing today.
+          </small>
+
+          <div class="section-title" style="margin-top:10px;">Timeline Labels</div>
+          <label for="labelUnitSelect">Label Unit</label>
+          <select id="labelUnitSelect">
+            <option value="days">Days</option>
+            <option value="weeks" selected>Weeks</option>
+            <option value="months">Months</option>
+            <option value="years">Years</option>
+          </select>
+          <label for="labelIntervalInput">Every N units</label>
+          <input type="number" id="labelIntervalInput" value="1" />
+          <small class="hint">
+            Example: Weeks + 1 = every week, Months + 2 = every 2 months.
+          </small>
+
+          <div class="section-title" style="margin-top:10px;">Interactions</div>
+          <label>
+            <!-- DEFAULT NOW OFF: removed `checked` -->
+            <input type="checkbox" id="liveDragInput" />
+            Enable live drag editing on chart
+          </label>
+          <small class="hint">
+            Turn this off before exporting if you don't want drag handles in the chart.
+          </small>
+        </div>
+
+        <!-- Column 4: Grid Lines -->
+        <div class="config-section">
+          <div class="section-title">Primary Grid Lines</div>
+          <label><input type="checkbox" id="showGridInput" /> Show primary grid lines</label>
+          <label for="gridUnitSelect">Primary Grid Unit</label>
+          <select id="gridUnitSelect">
+            <option value="days" selected>Days</option>
+            <option value="weeks">Weeks</option>
+            <option value="months">Months</option>
+            <option value="years">Years</option>
+          </select>
+          <label for="gridIntervalInput">Every N primary grid units</label>
+          <input type="number" id="gridIntervalInput" value="1" />
+          <label for="gridThicknessInput">Primary Grid Line Thickness (px)</label>
+          <input type="number" id="gridThicknessInput" value="1" />
+          <label for="gridColorInput">Primary Grid Line Color</label>
+          <input type="color" id="gridColorInput" value="#e0e0e0" />
+
+          <div class="section-title">Secondary Grid Lines</div>
+          <label><input type="checkbox" id="showGrid2Input" /> Show secondary grid lines</label>
+          <label for="gridUnit2Select">Secondary Grid Unit</label>
+          <select id="gridUnit2Select">
+            <option value="days" selected>Days</option>
+            <option value="weeks">Weeks</option>
+            <option value="months">Months</option>
+            <option value="years">Years</option>
+          </select>
+          <label for="gridInterval2Input">Every N secondary grid units</label>
+          <input type="number" id="gridInterval2Input" value="1" />
+          <label for="gridThickness2Input">Secondary Grid Line Thickness (px)</label>
+          <input type="number" id="gridThickness2Input" value="1" />
+          <label for="gridColor2Input">Secondary Grid Line Color</label>
+          <input type="color" id="gridColor2Input" value="#cccccc" />
+        </div>
+      </div>
+
+      <!-- Groups -->
+      <div>
+        <div class="section-title">Rows</div>
+        <table class="form-table" id="groupTable">
+          <thead>
+            <tr>
+              <th>Row ID</th>
+              <th>Label</th>
+              <th>Color</th>
+              <th>Label Color</th>
+              <th>Item Text Color</th>
+              <th>Height(px)</th>
+              <th>Row Label Size</th>
+              <th>Item Font Size</th>
+              <th>Align</th>
+              <th>Order</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="btn-row">
+          <button id="addGroupBtn">Add Row</button>
+        </div>
+      </div>
+
+      <!-- Projects -->
+      <div>
+        <div class="section-title">Groupings (optional colour override)</div>
+        <table class="form-table" id="projectTable">
+          <thead>
+            <tr>
+              <th>Grouping ID</th>
+              <th>Grouping Name</th>
+              <th>Color</th>
+              <th>Order</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="btn-row">
+          <button id="addProjectBtn">Add Grouping</button>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div>
+        <div class="section-title">Items / Operations</div>
+        <div style="overflow-x:auto;">
+          <table class="form-table" id="itemTable">
+            <thead>
+              <tr>
+                <th>Rows</th>
+                <th>Grouping<br>(optional)</th>
+                <th>Item Name</th>
+                <th>Label</th>
+                <th>Sub-Label</th>
+                <th>Start (date/time)</th>
+                <th>End (date/time)</th>
+                <th>Depends On</th>
+                <th class="narrow-col">Gap<br>(days)</th>
+                <th class="narrow-col">Duration<br>(days)</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="btn-row">
+          <button id="addItemBtn">Add Item</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Your app logic -->
+  <script src="js/health-check.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/dom-refs.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/chart.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/demo.js"></script>
+  <script src="js/undo.js"></script>
+  <script src="js/events.js"></script>
+</body>
+
+</html>
